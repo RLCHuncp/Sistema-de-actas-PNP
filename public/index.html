@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Sistema de Actas PNP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --pnp-green: #279448;
+    --pnp-green-dark: #14401f;
+    --pnp-gold: #b08d2c;
+    --pnp-gray: #6f6f6d;
+    --bg: #f4f2ee;
+    --card: #ffffff;
+    --ink: #23201c;
+    --muted: #6b6459;
+    --line: #e1dcd2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: linear-gradient(135deg, var(--pnp-green), var(--pnp-green-dark));
+    color: #fff;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  header { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  header .icon-shield { flex: 0 0 auto; opacity: .9; }
+  header .header-text { text-align: left; }
+  header h1 { margin: 0; font-size: 1.4rem; letter-spacing: .5px; }
+  header p { margin: 4px 0 0; opacity: .85; font-size: .9rem; }
+  main {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 0 16px 60px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .card h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    color: var(--pnp-green);
+    border-bottom: 2px solid var(--pnp-gold);
+    padding-bottom: 8px;
+  }
+  .card h3 {
+    margin: 0 0 10px;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  label {
+    display: block;
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  input[type=text], textarea, select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: .92rem;
+    font-family: inherit;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 54px; }
+  .field { margin-bottom: 2px; }
+
+  /* Fila con input + botón auxiliar (DNI/RENIEC, Hoy, Ahora) */
+  .btn-row { display: flex; gap: 6px; align-items: stretch; }
+  .btn-row input { flex: 1; }
+  .aux-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    background: #f6f3ee;
+    border-radius: 6px;
+    padding: 0 12px;
+    cursor: pointer;
+    font-size: .85rem;
+    color: var(--pnp-green);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .aux-btn:hover { background: #ece6da; }
+  .aux-btn:disabled { opacity: .5; cursor: default; }
+  .aux-status { font-size: .74rem; margin-top: 3px; min-height: 14px; }
+  .aux-status.ok { color: #2e7d32; }
+  .aux-status.error { color: #b3261e; }
+  .aux-status.loading { color: var(--muted); }
+
+  /* Select con buscador (combobox) */
+  .combo { position: relative; }
+  .combo-input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: .92rem;
+    font-family: inherit;
+    background: #fff;
+    cursor: text;
+  }
+  .combo-input:disabled { background: #f4f2ee; cursor: not-allowed; color: var(--muted); }
+  .combo-list {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    display: none;
+  }
+  .combo-list.open { display: block; }
+  .combo-option {
+    padding: 9px 12px;
+    font-size: .9rem;
+    cursor: pointer;
+  }
+  .combo-option:hover, .combo-option.active { background: #f6efe4; }
+  .combo-option.empty { color: var(--muted); cursor: default; }
+  .combo-option.empty:hover { background: transparent; }
+
+  .ubigeo-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .persona-block {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+    background: #fbfaf7;
+  }
+  .persona-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .persona-block-header h3 {
+    margin: 0;
+    font-size: .88rem;
+    color: var(--pnp-green);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .persona-block-header .aux-btn {
+    color: #b3261e;
+    font-size: .78rem;
+    padding: 4px 10px;
+  }
+
+  .tipos-list { display: flex; flex-direction: column; gap: 8px; }
+  .tipo-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .tipo-item.disabled { opacity: .5; }
+  .tipo-item label.tipo-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .95rem;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .tipo-item input[type=checkbox] { width: 16px; height: 16px; }
+  .icon { display: inline-block; vertical-align: -3px; flex-shrink: 0; }
+  .badge {
+    font-size: .68rem;
+    padding: 2px 8px 2px 6px;
+    border-radius: 20px;
+    background: #eee;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge.pendiente { background: #fff2d9; color: #8a6d1a; }
+  .badge .icon { vertical-align: -2px; }
+  .campos-especificos {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+    display: none;
+  }
+  .campos-especificos.show { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  button.primary {
+    background: var(--pnp-green);
+    color: #fff;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  button.primary:hover { background: #0f3318; }
+  .status { text-align: center; margin-top: 10px; font-size: .85rem; color: var(--muted); }
+  .status.error { color: #b3261e; }
+  .status.ok { color: #2e7d32; }
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="icon icon-shield" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+  <div class="header-text">
+    <h1>Sistema de Generación de Actas — PNP</h1>
+    <p>Completa los datos una vez y genera las actas necesarias en formato Word</p>
+  </div>
+</header>
+
+<main>
+  <form id="acta-form">
+    <div class="card">
+      <h2>1. Datos generales de la intervención</h2>
+      <h3>Ubicación</h3>
+      <div class="ubigeo-row">
+        <div class="field">
+          <label for="base__departamento">Departamento</label>
+          <div id="combo-departamento"></div>
+        </div>
+        <div class="field">
+          <label for="base__provincia">Provincia</label>
+          <div id="combo-provincia"></div>
+        </div>
+        <div class="field">
+          <label for="base__distrito">Distrito</label>
+          <div id="combo-distrito"></div>
+        </div>
+      </div>
+      <div class="grid" id="campos-base"></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Base legal del suceso</h2>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">
+        Elige el tipo de delito/suceso y se sugiere la base legal (editable) —
+        no reemplaza la calificación jurídica final del fiscal.
+      </p>
+      <div class="field">
+        <label for="tipo-delito-combo-input">Tipo de delito / suceso</label>
+        <div id="tipo-delito-combo"></div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label for="base__base_legal">Base legal (se inserta en el acta, puedes editarla)</label>
+        <textarea id="base__base_legal" name="base_legal" rows="3"></textarea>
+      </div>
+      <div id="base-legal-nota" style="font-size:.78rem;color:#8a6d1a;margin-top:6px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>3. Personas intervinientes</h2>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:-6px;margin-bottom:12px;">
+        Si hay más de un detenido/interviniente, agrega uno por persona — se
+        genera un documento firmable por separado para cada una.
+      </p>
+      <div id="personas-list"></div>
+      <button type="button" id="agregar-persona-btn" class="aux-btn" style="margin-top:8px;">
+        <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Agregar otra persona interviniente
+      </button>
+    </div>
+
+    <div class="card">
+      <h2>4. Actas a generar</h2>
+      <div class="tipos-list" id="tipos-list"></div>
+    </div>
+
+    <button type="submit" class="primary">
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+      Generar documento(s)
+    </button>
+    <div class="status" id="status"></div>
+  </form>
+</main>
+
+<script>
+let CONFIG = null;
+let BASE_LEGAL = null;
+let UBIGEO = null;
+
+// Íconos SVG (estilo Lucide, MIT, sin dependencias externas) — se usa currentColor
+// para heredar el color del botón/badge donde se insertan.
+const ICONS = {
+  search: `<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+  calendar: `<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>`,
+  clock: `<svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  checkCircle: `<svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`,
+  alertCircle: `<svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  trash: `<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+};
+
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio",
+  "agosto","septiembre","octubre","noviembre","diciembre"];
+
+function fechaHoyTexto() {
+  const d = new Date();
+  return `${d.getDate()} de ${MESES[d.getMonth()]} del ${d.getFullYear()}`;
+}
+function horaAhoraTexto() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+function slugify(text) {
+  return (text || "")
+    .toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+// tags que activan el botón de búsqueda RENIEC, y el nombre del campo
+// "nombre" que se autocompleta (misma sección/prefix que el campo DNI)
+function nombreTagAsociado(tag) {
+  if (tag.endsWith("_doc_numero")) return tag.slice(0, -"_doc_numero".length) + "_nombre";
+  if (tag.endsWith("_dni")) return tag.slice(0, -"_dni".length) + "_nombre";
+  return null;
+}
+
+// Campos que deben aceptar solo dígitos (DNI, edad, celular, CIP, teléfono...).
+// No incluye "N° de Resolución/Expediente" a propósito: en la práctica suelen
+// llevar guiones o letras (ej. "00123-2026-JFS").
+function esCampoNumerico(tag) {
+  return /(_dni|_edad|_celular|_cip|telefono|_doc_numero)/.test(tag);
+}
+
+function fieldHtml(f, prefix) {
+  const id = prefix + "__" + f.tag;
+  const nombreTag = f.tipo === "text" ? nombreTagAsociado(f.tag) : null;
+  const esFecha = prefix === "base" && f.tag === "fecha";
+  const esHora = prefix === "base" && (f.tag === "hora" || f.tag === "hora_cierre");
+
+  let control;
+  if (f.tipo === "textarea") {
+    control = `<textarea id="${id}" name="${f.tag}"></textarea>`;
+  } else if (f.tipo === "select_si_no") {
+    control = `<select id="${id}" name="${f.tag}">
+      <option value="Sí">Sí</option>
+      <option value="No" selected>No</option>
+    </select>`;
+  } else if (nombreTag) {
+    // campo tipo DNI: input + botón de búsqueda RENIEC (solo dígitos)
+    const nombreId = prefix + "__" + nombreTag;
+    control = `
+      <div class="btn-row">
+        <input type="text" id="${id}" name="${f.tag}" inputmode="numeric" maxlength="8" placeholder="8 dígitos" data-numeric="1" />
+        <button type="button" class="aux-btn" data-action="dni" data-dni-input="${id}" data-nombre-target="${nombreId}" title="Buscar en RENIEC">${ICONS.search}</button>
+      </div>
+      <div class="aux-status" id="${id}__status"></div>`;
+  } else if (esFecha) {
+    control = `
+      <div class="btn-row">
+        <input type="text" id="${id}" name="${f.tag}" placeholder="ej. 17 de agosto del 2026" />
+        <button type="button" class="aux-btn" data-action="hoy" data-target="${id}">${ICONS.calendar} Hoy</button>
+      </div>`;
+  } else if (esHora) {
+    control = `
+      <div class="btn-row">
+        <input type="text" id="${id}" name="${f.tag}" placeholder="HH:MM" />
+        <button type="button" class="aux-btn" data-action="ahora" data-target="${id}">${ICONS.clock} Ahora</button>
+      </div>`;
+  } else if (esCampoNumerico(f.tag)) {
+    // edad, celular, CIP, teléfono: solo dígitos, sin botón adicional
+    control = `<input type="text" id="${id}" name="${f.tag}" inputmode="numeric" data-numeric="1" />`;
+  } else {
+    control = `<input type="text" id="${id}" name="${f.tag}" />`;
+  }
+  return `<div class="field"><label for="${id}">${f.label}</label>${control}</div>`;
+}
+
+// --- Combobox genérico con buscador ---
+function initCombo(containerEl, inputId, options, onSelect, opts) {
+  opts = opts || {};
+  const placeholder = opts.placeholder || "Escribe para buscar...";
+  containerEl.innerHTML = `
+    <div class="combo">
+      <input type="text" class="combo-input" id="${inputId}" autocomplete="off" placeholder="${placeholder}" ${opts.disabled ? "disabled" : ""} />
+      <div class="combo-list"></div>
+    </div>`;
+  const input = containerEl.querySelector(".combo-input");
+  const list = containerEl.querySelector(".combo-list");
+  let currentOptions = options || [];
+  let currentValue = null;
+
+  function renderList(filterText) {
+    const q = (filterText || "").trim().toLowerCase();
+    const filtered = currentOptions.filter(o => o.toLowerCase().includes(q));
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="combo-option empty">Sin resultados</div>`;
+    } else {
+      list.innerHTML = filtered.slice(0, 300).map(o =>
+        `<div class="combo-option" data-value="${o}">${o}</div>`
+      ).join("");
+    }
+    list.classList.add("open");
+  }
+
+  input.addEventListener("focus", () => { if (!input.disabled) renderList(""); });
+  input.addEventListener("input", () => renderList(input.value));
+  input.addEventListener("blur", () => setTimeout(() => list.classList.remove("open"), 150));
+  list.addEventListener("mousedown", (e) => {
+    const opt = e.target.closest(".combo-option");
+    if (!opt || !opt.dataset.value) return;
+    currentValue = opt.dataset.value;
+    input.value = currentValue;
+    list.classList.remove("open");
+    onSelect(currentValue);
+  });
+
+  return {
+    setOptions(newOptions, { autoSelectFirst = false, clear = true } = {}) {
+      currentOptions = newOptions || [];
+      if (clear) { input.value = ""; currentValue = null; }
+      input.disabled = currentOptions.length === 0;
+      if (autoSelectFirst && currentOptions.length) {
+        currentValue = currentOptions[0];
+        input.value = currentValue;
+      }
+    },
+    getValue: () => currentValue,
+  };
+}
+
+// --- Cascada Departamento -> Provincia -> Distrito ---
+function initUbigeoCascade() {
+  const departamentos = UBIGEO.departamentos.map(d => d.nombre);
+
+  const distritoCombo = initCombo(
+    document.getElementById("combo-distrito"), "base__distrito", [], () => {}, { disabled: true }
+  );
+  const provinciaCombo = initCombo(
+    document.getElementById("combo-provincia"), "base__provincia", [], (provNombre) => {
+      const depNombre = departamentoCombo.getValue();
+      const distritos = (UBIGEO.distritos[depNombre + "|" + provNombre] || []).slice().sort();
+      distritoCombo.setOptions(distritos, { autoSelectFirst: true });
+    }, { disabled: true }
+  );
+  const departamentoCombo = initCombo(
+    document.getElementById("combo-departamento"), "base__departamento", departamentos, (depNombre) => {
+      const provincias = (UBIGEO.provincias[depNombre] || []).slice().sort();
+      provinciaCombo.setOptions(provincias, { autoSelectFirst: true });
+      // dispara también la selección de provincia (y en cascada, distrito)
+      if (provincias.length) {
+        const primeraProv = provincias[0];
+        const distritos = (UBIGEO.distritos[depNombre + "|" + primeraProv] || []).slice().sort();
+        distritoCombo.setOptions(distritos, { autoSelectFirst: true });
+      }
+    }
+  );
+}
+
+// --- Repetidor de "Personas intervinientes" (para varios detenidos a la vez) ---
+// IMPORTANTE: nunca se reescribe el HTML de bloques que ya existen (eso borraría
+// lo que el usuario ya escribió) — solo se agrega o se quita el bloque puntual.
+let personaIndices = [0];
+let nextPersonaIdx = 0;
+
+function personaBlockHtml(idx) {
+  return `<div class="persona-block" data-persona-block="${idx}">
+      <div class="persona-block-header"><h3></h3></div>
+      <div class="grid">
+        ${CONFIG.campos_persona.map(f => fieldHtml(f, "persona" + idx)).join("")}
+      </div>
+    </div>`;
+}
+
+function agregarBloquePersona(idx) {
+  const container = document.getElementById("personas-list");
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = personaBlockHtml(idx);
+  const block = wrapper.firstElementChild;
+  container.appendChild(block);
+  block.querySelectorAll('.aux-btn[data-action="dni"]').forEach(btn => {
+    btn.addEventListener("click", () => buscarDni(btn));
+  });
+  refrescarEncabezadosPersonas();
+}
+
+// Renumera "Persona N" y muestra/oculta el botón Quitar según cuántos bloques
+// queden — sin recrear los campos, así los valores ya escritos no se pierden.
+function refrescarEncabezadosPersonas() {
+  const container = document.getElementById("personas-list");
+  const blocks = Array.from(container.querySelectorAll(".persona-block"));
+  const removible = blocks.length > 1;
+  blocks.forEach((block, i) => {
+    const idx = Number(block.dataset.personaBlock);
+    block.querySelector("h3").textContent =
+      `Persona ${i + 1}` + (removible ? " (se genera un documento propio para esta persona)" : "");
+    const header = block.querySelector(".persona-block-header");
+    let quitarBtn = header.querySelector('.aux-btn[data-action="quitar-persona"]');
+    if (removible && !quitarBtn) {
+      quitarBtn = document.createElement("button");
+      quitarBtn.type = "button";
+      quitarBtn.className = "aux-btn";
+      quitarBtn.innerHTML = `${ICONS.trash} Quitar`;
+      quitarBtn.addEventListener("click", () => {
+        personaIndices = personaIndices.filter(i2 => i2 !== idx);
+        block.remove();
+        refrescarEncabezadosPersonas();
+      });
+      header.appendChild(quitarBtn);
+    } else if (!removible && quitarBtn) {
+      quitarBtn.remove();
+    }
+  });
+}
+
+
+async function buscarDni(btn) {
+  const inputEl = document.getElementById(btn.dataset.dniInput);
+  const nombreEl = document.getElementById(btn.dataset.nombreTarget);
+  const statusEl = document.getElementById(btn.dataset.dniInput + "__status");
+  const dni = (inputEl.value || "").trim();
+
+  if (!/^\d{8}$/.test(dni)) {
+    statusEl.textContent = "Ingresa un DNI de 8 dígitos";
+    statusEl.className = "aux-status error";
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = "Buscando en RENIEC...";
+  statusEl.className = "aux-status loading";
+
+  try {
+    const resp = await fetch(`/api/dni/${dni}`);
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || "No se pudo consultar el DNI");
+
+    if (nombreEl) nombreEl.value = data.nombre_completo;
+    statusEl.textContent = "✓ " + data.nombre_completo;
+    statusEl.className = "aux-status ok";
+  } catch (err) {
+    statusEl.textContent = err.message;
+    statusEl.className = "aux-status error";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function init() {
+  const [resConfig, resLegal, resUbigeo] = await Promise.all([
+    fetch("/api/config"),
+    fetch("/api/base-legal"),
+    fetch("/api/ubigeo"),
+  ]);
+  CONFIG = await resConfig.json();
+  BASE_LEGAL = await resLegal.json();
+  UBIGEO = await resUbigeo.json();
+
+  // distrito, provincia, departamento y base_legal se manejan con sus propios
+  // widgets (cascada / combobox); se excluyen del grid genérico
+  const excluir = new Set(["distrito", "provincia", "departamento", "base_legal"]);
+  const camposBaseGrid = CONFIG.campos_base.filter(f => !excluir.has(f.tag));
+  document.getElementById("campos-base").innerHTML =
+    camposBaseGrid.map(f => fieldHtml(f, "base")).join("");
+
+  agregarBloquePersona(0);
+  document.getElementById("agregar-persona-btn").addEventListener("click", () => {
+    nextPersonaIdx++;
+    personaIndices.push(nextPersonaIdx);
+    agregarBloquePersona(nextPersonaIdx);
+  });
+
+  initUbigeoCascade();
+
+  const comboOptions = BASE_LEGAL.delitos.map(d => ({ value: d.id, label: d.nombre }));
+  const tipoDelitoContainer = document.getElementById("tipo-delito-combo");
+  const combo = initCombo(
+    tipoDelitoContainer, "tipo-delito-combo-input",
+    comboOptions.map(o => o.label),
+    (label) => {
+      const d = BASE_LEGAL.delitos.find(x => x.nombre === label);
+      document.getElementById("base__base_legal").value = d ? d.texto_base_legal : "";
+      document.getElementById("base-legal-nota").textContent = d && d.nota ? "⚠ " + d.nota : "";
+    },
+    { placeholder: "Escribe para buscar el tipo de delito..." }
+  );
+  if (comboOptions.length) {
+    document.getElementById("tipo-delito-combo-input").value = comboOptions[0].label;
+    const d = BASE_LEGAL.delitos[0];
+    document.getElementById("base__base_legal").value = d.texto_base_legal;
+    document.getElementById("base-legal-nota").textContent = d.nota ? "⚠ " + d.nota : "";
+  }
+
+  const list = document.getElementById("tipos-list");
+  list.innerHTML = CONFIG.tipos_acta.map(t => `
+    <div class="tipo-item ${t.implementado ? "" : "disabled"}">
+      <label class="tipo-label">
+        <input type="checkbox" data-tipo="${t.id}" ${t.implementado ? "" : "disabled"} />
+        ${t.nombre}
+        <span class="badge ${t.implementado ? "" : "pendiente"}">
+          ${t.implementado ? ICONS.checkCircle + " disponible" : ICONS.alertCircle + " pendiente de plantilla"}
+        </span>
+      </label>
+      <div class="campos-especificos" id="especificos__${t.id}">
+        ${(t.campos_especificos || []).map(f => fieldHtml(f, t.id)).join("")}
+      </div>
+    </div>
+  `).join("");
+
+  list.querySelectorAll('input[type=checkbox]').forEach(chk => {
+    chk.addEventListener("change", () => {
+      const box = document.getElementById("especificos__" + chk.dataset.tipo);
+      box.classList.toggle("show", chk.checked);
+    });
+  });
+
+  document.querySelectorAll('.aux-btn[data-action="dni"]').forEach(btn => {
+    btn.addEventListener("click", () => buscarDni(btn));
+  });
+  document.querySelectorAll('.aux-btn[data-action="hoy"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById(btn.dataset.target).value = fechaHoyTexto();
+    });
+  });
+  document.querySelectorAll('.aux-btn[data-action="ahora"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById(btn.dataset.target).value = horaAhoraTexto();
+    });
+  });
+}
+
+function collect(fields, prefix) {
+  const out = {};
+  fields.forEach(f => {
+    const el = document.getElementById(prefix + "__" + f.tag);
+    out[f.tag] = el ? el.value : "";
+  });
+  return out;
+}
+
+document.getElementById("acta-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const status = document.getElementById("status");
+  status.textContent = "";
+  status.className = "status";
+
+  const seleccionados = Array.from(
+    document.querySelectorAll('#tipos-list input[type=checkbox]:checked')
+  ).map(chk => chk.dataset.tipo);
+
+  if (seleccionados.length === 0) {
+    status.textContent = "Selecciona al menos un tipo de acta.";
+    status.className = "status error";
+    return;
+  }
+
+  const datosBase = collect(CONFIG.campos_base, "base");
+  const personas = personaIndices.map(idx => collect(CONFIG.campos_persona, "persona" + idx));
+
+  const especificosPorTipo = {};
+  seleccionados.forEach(tipoId => {
+    const tipo = CONFIG.tipos_acta.find(t => t.id === tipoId);
+    especificosPorTipo[tipoId] = collect(tipo.campos_especificos || [], tipoId);
+  });
+
+  // Un documento por cada combinación (tipo de acta x persona interviniente) —
+  // así cada persona firma su propia acta cuando hay varios detenidos.
+  const documentos = [];
+  seleccionados.forEach(tipoId => {
+    personas.forEach((personaData, i) => {
+      const datos = { ...datosBase, ...personaData, ...especificosPorTipo[tipoId] };
+      const slug = slugify(personaData.persona_nombre);
+      const sufijo = personas.length > 1 ? `_${slug || "persona" + (i + 1)}` : "";
+      documentos.push({ tipoId, datos, nombre: `${tipoId}${sufijo}` });
+    });
+  });
+
+  status.textContent = "Generando documento(s)...";
+
+  try {
+    let resp, filename;
+    if (documentos.length === 1) {
+      const doc = documentos[0];
+      resp = await fetch(`/api/generar/${doc.tipoId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(doc.datos),
+      });
+      filename = `${doc.nombre}.docx`;
+    } else {
+      resp = await fetch(`/api/generar-lote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentos }),
+      });
+      filename = "actas.zip";
+    }
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || "Error generando el documento");
+    }
+
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    status.textContent = documentos.length > 1
+      ? `${documentos.length} documentos generados y descargados en un .zip.`
+      : "Documento generado y descargado correctamente.";
+    status.className = "status ok";
+  } catch (err) {
+    status.textContent = "Error: " + err.message;
+    status.className = "status error";
+  }
+});
+
+init();
+
+// Filtro global: cualquier input marcado data-numeric (DNI, edad, celular, CIP,
+// teléfono) solo acepta dígitos, sin importar en qué bloque se haya creado
+// (incluye los bloques de persona agregados dinámicamente).
+document.addEventListener("input", (e) => {
+  if (e.target.matches && e.target.matches('input[data-numeric]')) {
+    const limpio = e.target.value.replace(/\D/g, "");
+    if (limpio !== e.target.value) e.target.value = limpio;
+  }
+});
+
+</script>
+</body>
+</html>

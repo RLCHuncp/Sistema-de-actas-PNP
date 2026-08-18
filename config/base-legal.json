@@ -1,0 +1,82 @@
+{
+  "advertencia": "Este catálogo es una ayuda de referencia rápida para el instructor policial. Los artículos y penas pueden variar por modificatorias legislativas o por la calificación jurídica final del fiscal/juez. Verificar siempre la tipificación con el área legal o el Ministerio Público antes de consignarla como definitiva.",
+  "articulos_procesales_generales": {
+    "nombre": "Base procesal general (diligencias policiales de urgencia)",
+    "texto": "Artículos 67°, 205° y 210° del Código Procesal Penal (D. Leg. N° 957), sobre funciones de investigación de la Policía Nacional y control de identidad policial."
+  },
+  "derechos_imputado": {
+    "nombre": "Lectura de derechos al imputado/detenido",
+    "texto": "Artículo 71° inciso 2 del Código Procesal Penal (D. Leg. N° 957), sobre los derechos del imputado."
+  },
+  "derechos_agraviado": {
+    "nombre": "Lectura de derechos y deberes del agraviado",
+    "texto": "Artículos 95°, 96° y 105° del Código Procesal Penal (D. Leg. N° 957), sobre derechos y deberes del agraviado."
+  },
+  "delitos": [
+    {
+      "id": "agresiones_grupo_familiar",
+      "nombre": "Agresiones contra las mujeres o integrantes del grupo familiar",
+      "articulos_penal": ["Artículo 122-B del Código Penal"],
+      "pena_referencial": "Pena privativa de libertad no menor de 1 ni mayor de 3 años (hasta 3-4 años con agravantes: uso de arma, ensañamiento, presencia de menores, entre otras del art. 122-B).",
+      "texto_base_legal": "El hecho se enmarca en el delito de Agresiones en contra de las mujeres o integrantes del grupo familiar, previsto y sancionado en el artículo 122-B del Código Penal, en el marco de la Ley N° 30364 (Ley para prevenir, sancionar y erradicar la violencia contra las mujeres y los integrantes del grupo familiar)."
+    },
+    {
+      "id": "incumplimiento_medidas_proteccion",
+      "nombre": "Incumplimiento de medidas de protección (sin nueva agresión)",
+      "articulos_penal": ["Artículo 368° del Código Penal (último párrafo)"],
+      "pena_referencial": "Pena privativa de libertad no menor de 6 meses ni mayor de 2 años (agravada cuando se trata de incumplimiento de medidas de protección dictadas en contexto de violencia familiar).",
+      "texto_base_legal": "El hecho se enmarca en el delito de Resistencia o Desobediencia a la Autoridad, en su modalidad agravada por incumplimiento de medidas de protección, previsto y sancionado en el último párrafo del artículo 368° del Código Penal.",
+      "nota": "Si el incumplimiento incluye una nueva agresión física o psicológica contra la víctima, la Corte Suprema (Casación 1879-2022, Áncash) ha establecido que corresponde calificar el hecho como delito de agresiones (art. 122-B numeral 6, agravante) y no como desobediencia a la autoridad — son concurso aparente de leyes, no concurso ideal. Verificar con el fiscal de turno cuál calificación aplica al caso concreto."
+    },
+    {
+      "id": "violencia_contra_autoridad",
+      "nombre": "Violencia contra la autoridad para impedir el ejercicio de sus funciones",
+      "articulos_penal": ["Artículo 366° del Código Penal", "Artículo 367° del Código Penal (formas agravadas)"],
+      "pena_referencial": "Artículo 366°: no menor de 2 ni mayor de 4 años. Artículo 367° (agravado, p. ej. contra policía con violencia grave): no menor de 4 ni mayor de 8 años; hasta 15 años si el agraviado muere.",
+      "texto_base_legal": "El hecho se enmarca en el delito Contra la Administración Pública, en la modalidad de Violencia contra la Autoridad para Impedir el Ejercicio de sus Funciones, previsto en el artículo 366° del Código Penal (agravado conforme al artículo 367° de concurrir las circunstancias ahí previstas).",
+      "nota": "El Acuerdo Plenario Extraordinario 1-2016/CIJ-116 precisa que el artículo 367° es residual y exige actos de violencia grave contra la autoridad policial; actos menores de resistencia se califican como artículo 368° (desobediencia)."
+    },
+    {
+      "id": "conduccion_estado_ebriedad",
+      "nombre": "Conducción en estado de ebriedad o drogadicción",
+      "articulos_penal": ["Artículo 274° del Código Penal"],
+      "pena_referencial": "No menor de 6 meses ni mayor de 2 años (más de 0.5 g/l de alcohol en sangre). Si presta servicio de transporte público con más de 0.25 g/l: no menor de 1 ni mayor de 3 años.",
+      "texto_base_legal": "El hecho se enmarca en el delito Contra la Seguridad Pública, en la modalidad de Peligro Común - Conducción en Estado de Ebriedad o Drogadicción, previsto y sancionado en el artículo 274° del Código Penal."
+    },
+    {
+      "id": "hurto_agravado",
+      "nombre": "Hurto agravado",
+      "articulos_penal": ["Artículo 185° del Código Penal (tipo base)", "Artículo 186° del Código Penal (agravantes)"],
+      "pena_referencial": "3 a 6 años (agravantes generales, p. ej. de noche o en banda); 4 a 8 años (casa habitada, bien de valor científico o víctima vulnerable); 8 a 15 años (organización criminal).",
+      "texto_base_legal": "El hecho se enmarca en el delito Contra el Patrimonio, en la modalidad de Hurto Agravado, previsto y sancionado en los artículos 185° y 186° del Código Penal."
+    },
+    {
+      "id": "accidente_transito_lesiones",
+      "nombre": "Accidente de tránsito con lesiones culposas",
+      "articulos_penal": ["Artículo 124° del Código Penal"],
+      "pena_referencial": "Varía según gravedad de la lesión; se agrava si el agente conducía en estado de ebriedad o drogadicción.",
+      "texto_base_legal": "El hecho se enmarca en el delito de Lesiones Culposas, previsto y sancionado en el artículo 124° del Código Penal, en el marco de un accidente de tránsito."
+    },
+    {
+      "id": "accidente_transito_muerte",
+      "nombre": "Accidente de tránsito con resultado de muerte",
+      "articulos_penal": ["Artículo 111° del Código Penal"],
+      "pena_referencial": "No menor de 4 ni mayor de 8 años cuando el agente conducía en estado de ebriedad o drogadicción (agravado); menor si es culpa simple sin agravantes.",
+      "texto_base_legal": "El hecho se enmarca en el delito de Homicidio Culposo, previsto y sancionado en el artículo 111° del Código Penal, en el marco de un accidente de tránsito."
+    },
+    {
+      "id": "hurto_simple",
+      "nombre": "Hurto simple",
+      "articulos_penal": ["Artículo 185° del Código Penal"],
+      "pena_referencial": "No menor de 1 ni mayor de 3 años.",
+      "texto_base_legal": "El hecho se enmarca en el delito Contra el Patrimonio, en la modalidad de Hurto Simple, previsto y sancionado en el artículo 185° del Código Penal."
+    },
+    {
+      "id": "otro_manual",
+      "nombre": "Otro / especificar manualmente",
+      "articulos_penal": [],
+      "pena_referencial": "",
+      "texto_base_legal": ""
+    }
+  ]
+}

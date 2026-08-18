@@ -1,0 +1,216 @@
+{
+  "campos_base": [
+    { "tag": "distrito", "label": "Distrito", "tipo": "text" },
+    { "tag": "provincia", "label": "Provincia", "tipo": "text" },
+    { "tag": "departamento", "label": "Departamento", "tipo": "text" },
+    { "tag": "fecha", "label": "Fecha (ej. 17 de agosto del 2026)", "tipo": "text" },
+    { "tag": "hora", "label": "Hora de inicio", "tipo": "text" },
+    { "tag": "hora_cierre", "label": "Hora de cierre", "tipo": "text" },
+    { "tag": "lugar_exacto", "label": "Lugar exacto de la intervención", "tipo": "textarea" },
+    { "tag": "instructor_grado", "label": "Grado del instructor policial", "tipo": "text" },
+    { "tag": "instructor_nombre", "label": "Nombre del instructor policial", "tipo": "text" },
+    { "tag": "instructor_cip", "label": "CIP del instructor", "tipo": "text" },
+    { "tag": "instructor_unidad", "label": "Unidad / Comisaría", "tipo": "text" },
+    { "tag": "base_legal", "label": "Base legal (se autocompleta al elegir el tipo de suceso, editable)", "tipo": "textarea" }
+  ],
+  "campos_persona": [
+    { "tag": "persona_nombre", "label": "Nombres y apellidos", "tipo": "text" },
+    { "tag": "persona_edad", "label": "Edad", "tipo": "text" },
+    { "tag": "persona_natural_de", "label": "Natural de", "tipo": "text" },
+    { "tag": "persona_estado_civil", "label": "Estado civil", "tipo": "text" },
+    { "tag": "persona_grado_instruccion", "label": "Grado de instrucción", "tipo": "text" },
+    { "tag": "persona_ocupacion", "label": "Ocupación", "tipo": "text" },
+    { "tag": "persona_nacionalidad", "label": "Nacionalidad", "tipo": "text" },
+    { "tag": "persona_doc_tipo", "label": "Tipo de documento (DNI/CE/Pasaporte)", "tipo": "text" },
+    { "tag": "persona_doc_numero", "label": "N° de documento", "tipo": "text" },
+    { "tag": "persona_celular", "label": "Celular", "tipo": "text" },
+    { "tag": "persona_email", "label": "Correo electrónico", "tipo": "text" },
+    { "tag": "persona_domicilio", "label": "Domicilio actual", "tipo": "textarea" }
+  ],
+  "tipos_acta": [
+    {
+      "id": "registro_personal",
+      "nombre": "Acta de Registro Personal",
+      "plantilla": "acta_registro_personal.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "motivo_incautacion", "label": "Motivo de la incautación", "tipo": "text" },
+        { "tag": "pertenencias_detalle", "label": "Detalle de pertenencias entregadas", "tipo": "textarea" },
+        { "tag": "persona_confianza_nombre", "label": "Persona de confianza: nombre", "tipo": "text" },
+        { "tag": "persona_confianza_dni", "label": "Persona de confianza: DNI", "tipo": "text" },
+        { "tag": "persona_confianza_celular", "label": "Persona de confianza: celular", "tipo": "text" },
+        { "tag": "persona_confianza_domicilio", "label": "Persona de confianza: domicilio", "tipo": "text" },
+        { "tag": "resultado_registro", "label": "Resultado del registro personal", "tipo": "textarea" },
+        { "tag": "motivo_lugar_diligencia", "label": "Motivo de realizar la diligencia en esa sede", "tipo": "text" }
+      ]
+    },
+    {
+      "id": "lectura_derechos_imputado",
+      "nombre": "Acta de Lectura de Derechos al Imputado",
+      "plantilla": "acta_lectura_derechos_imputado.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "motivo_detencion", "label": "Causa o motivo de detención", "tipo": "textarea" },
+        { "tag": "familiar_vinculo", "label": "Vínculo del familiar a notificar", "tipo": "text" },
+        { "tag": "familiar_nombre", "label": "Nombre del familiar notificado", "tipo": "text" },
+        { "tag": "familiar_celular", "label": "Celular del familiar", "tipo": "text" },
+        { "tag": "solicita_interprete", "label": "¿Solicita intérprete?", "tipo": "select_si_no" },
+        { "tag": "solicita_defensor_publico", "label": "¿Solicita defensor público?", "tipo": "select_si_no" },
+        { "tag": "solicita_abogado_particular", "label": "¿Solicita abogado particular?", "tipo": "select_si_no" },
+        { "tag": "solicita_evaluacion_medica", "label": "¿Solicita evaluación médica?", "tipo": "select_si_no" }
+      ]
+    },
+    {
+      "id": "denuncia_verbal",
+      "nombre": "Acta de Denuncia Verbal (agresión familiar)",
+      "plantilla": "acta_denuncia_verbal.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "denunciado_nombre", "label": "Nombre del denunciado", "tipo": "text" },
+        { "tag": "denunciado_dni", "label": "DNI del denunciado", "tipo": "text" },
+        { "tag": "vinculo_con_denunciado", "label": "Vínculo con el denunciado", "tipo": "text" },
+        { "tag": "mecanismo_agresion", "label": "Mecanismo de agresión", "tipo": "text" },
+        { "tag": "zona_afectada", "label": "Zona del cuerpo afectada", "tipo": "text" },
+        { "tag": "insultos", "label": "Insultos proferidos", "tipo": "text" },
+        { "tag": "fecha_hechos", "label": "Fecha de los hechos", "tipo": "text" },
+        { "tag": "hora_hechos", "label": "Hora de los hechos", "tipo": "text" },
+        { "tag": "lugar_hechos", "label": "Lugar de los hechos", "tipo": "textarea" },
+        { "tag": "circunstancias", "label": "Circunstancias (qué hacía la denunciante)", "tipo": "text" },
+        { "tag": "lesiones_observadas", "label": "Lesiones observadas", "tipo": "textarea" }
+      ]
+    },
+    {
+      "id": "notificacion_medidas_proteccion",
+      "nombre": "Acta de Lectura, Notificación y Entrega de Medidas de Protección",
+      "plantilla": "acta_notificacion_medidas_proteccion.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "juzgado", "label": "Juzgado que dictó la medida", "tipo": "text" },
+        { "tag": "resolucion_numero", "label": "N° de Resolución", "tipo": "text" },
+        { "tag": "expediente_numero", "label": "N° de Expediente", "tipo": "text" },
+        { "tag": "fecha_resolucion", "label": "Fecha de la resolución", "tipo": "text" },
+        { "tag": "victima_nombre", "label": "Nombre de la víctima protegida", "tipo": "text" },
+        { "tag": "victima_dni", "label": "DNI de la víctima", "tipo": "text" },
+        { "tag": "fecha_hechos", "label": "Fecha de los hechos originales", "tipo": "text" },
+        { "tag": "hora_hechos", "label": "Hora de los hechos originales", "tipo": "text" },
+        { "tag": "lugar_hechos", "label": "Lugar de los hechos originales", "tipo": "text" },
+        { "tag": "nivel_riesgo", "label": "Nivel de riesgo (leve/severo/extremo)", "tipo": "text" },
+        { "tag": "telefono_unidad_contacto", "label": "Teléfono de contacto de la unidad", "tipo": "text" }
+      ]
+    },
+    {
+      "id": "accidente_transito",
+      "nombre": "Acta de Intervención Policial por Accidente de Tránsito",
+      "plantilla": "acta_accidente_transito.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "acta_numero", "label": "N° de Acta", "tipo": "text" },
+        { "tag": "ciudad", "label": "Ciudad", "tipo": "text" },
+        { "tag": "medio_conocimiento", "label": "Medio por el que se tomó conocimiento", "tipo": "text" },
+        { "tag": "fecha_hechos", "label": "Fecha del accidente", "tipo": "text" },
+        { "tag": "hora_hechos", "label": "Hora aproximada del accidente", "tipo": "text" },
+        { "tag": "hora_llegada_pnp", "label": "Fecha y hora de llegada de la PNP", "tipo": "text" },
+        { "tag": "condicion_climatica", "label": "Condición climática", "tipo": "text" },
+        { "tag": "estado_via", "label": "Estado de la vía", "tipo": "text" },
+        { "tag": "veh1_placa", "label": "Vehículo 1 - Placa", "tipo": "text" },
+        { "tag": "veh1_clase", "label": "Vehículo 1 - Clase/tipo", "tipo": "text" },
+        { "tag": "veh1_marca", "label": "Vehículo 1 - Marca", "tipo": "text" },
+        { "tag": "veh1_modelo_anio", "label": "Vehículo 1 - Modelo/Año", "tipo": "text" },
+        { "tag": "veh1_color", "label": "Vehículo 1 - Color", "tipo": "text" },
+        { "tag": "veh1_motor", "label": "Vehículo 1 - N° de motor", "tipo": "text" },
+        { "tag": "veh1_propietario", "label": "Vehículo 1 - Propietario", "tipo": "text" },
+        { "tag": "veh1_soat", "label": "Vehículo 1 - Aseguradora / N° SOAT", "tipo": "text" },
+        { "tag": "conductor_nombre", "label": "Conductor - Nombre", "tipo": "text" },
+        { "tag": "conductor_dni", "label": "Conductor - DNI", "tipo": "text" },
+        { "tag": "conductor_edad", "label": "Conductor - Edad", "tipo": "text" },
+        { "tag": "conductor_licencia", "label": "Conductor - N° de licencia", "tipo": "text" },
+        { "tag": "conductor_categoria", "label": "Conductor - Categoría de licencia", "tipo": "text" },
+        { "tag": "conductor_domicilio", "label": "Conductor - Domicilio", "tipo": "text" },
+        { "tag": "conductor_estado_aparente", "label": "Conductor - Estado aparente", "tipo": "text" },
+        { "tag": "conductor_dosaje", "label": "Conductor - Resultado de dosaje etílico", "tipo": "text" },
+        { "tag": "occiso_nombre", "label": "Occiso - Nombre (si aplica)", "tipo": "text" },
+        { "tag": "occiso_dni", "label": "Occiso - DNI", "tipo": "text" },
+        { "tag": "occiso_edad", "label": "Occiso - Edad", "tipo": "text" },
+        { "tag": "occiso_condicion", "label": "Occiso - Condición en el accidente", "tipo": "text" },
+        { "tag": "occiso_causa_muerte", "label": "Occiso - Causa aparente de muerte", "tipo": "text" },
+        { "tag": "occiso_establecimiento", "label": "Occiso - Establecimiento de levantamiento", "tipo": "text" },
+        { "tag": "occiso_fiscal", "label": "Occiso - Fiscal que dispuso el levantamiento", "tipo": "text" },
+        { "tag": "lesionados_detalle", "label": "Detalle de lesionados", "tipo": "textarea" },
+        { "tag": "danios_materiales", "label": "Daños materiales constatados", "tipo": "textarea" },
+        { "tag": "narracion_hechos", "label": "Narración de los hechos", "tipo": "textarea" },
+        { "tag": "testigos_detalle", "label": "Testigos presenciales", "tipo": "textarea" },
+        { "tag": "fiscal_comunicado", "label": "Fiscal Provincial comunicado", "tipo": "text" },
+        { "tag": "fecha_hora_comunicacion_fiscal", "label": "Fecha/hora de comunicación al fiscal", "tipo": "text" },
+        { "tag": "observaciones", "label": "Observaciones", "tipo": "textarea" }
+      ]
+    },
+    {
+      "id": "lectura_derechos_agraviada",
+      "nombre": "Acta de Lectura de Derechos y Deberes de la Agraviada",
+      "plantilla": "acta_lectura_derechos_agraviada.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "observaciones_agraviada", "label": "Observaciones adicionales", "tipo": "textarea" }
+      ]
+    },
+    {
+      "id": "comunicacion_fiscal_turno",
+      "nombre": "Acta de Comunicación Telefónica al Fiscal de Turno",
+      "plantilla": "acta_comunicacion_fiscal.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "fiscal_cargo", "label": "Cargo del fiscal (ej. Fiscal Provincial Penal de Turno)", "tipo": "text" },
+        { "tag": "fiscal_nombre", "label": "Nombre del fiscal", "tipo": "text" },
+        { "tag": "fiscal_telefono", "label": "Teléfono del fiscal", "tipo": "text" },
+        { "tag": "delito_comunicado", "label": "Delito comunicado", "tipo": "text" },
+        { "tag": "fecha_hechos", "label": "Fecha de los hechos", "tipo": "text" },
+        { "tag": "hora_hechos", "label": "Hora de los hechos", "tipo": "text" },
+        { "tag": "lugar_hechos", "label": "Lugar de los hechos", "tipo": "textarea" },
+        { "tag": "disposicion_fiscal", "label": "Disposición del fiscal", "tipo": "textarea" },
+        { "tag": "fecha_hora_comunicacion", "label": "Fecha y hora de la comunicación", "tipo": "text" }
+      ]
+    },
+    {
+      "id": "test_hogan_romberg",
+      "nombre": "Acta de Prueba de Equilibrio y Coordinación (Hogan-Romberg)",
+      "plantilla": "acta_test_ebriedad.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "vehiculo_placa", "label": "Placa del vehículo (PUNR)", "tipo": "text" },
+        { "tag": "vehiculo_categoria", "label": "Categoría del vehículo", "tipo": "text" },
+        { "tag": "vehiculo_marca", "label": "Marca del vehículo", "tipo": "text" },
+        { "tag": "vehiculo_modelo", "label": "Modelo del vehículo", "tipo": "text" },
+        { "tag": "vehiculo_color", "label": "Color del vehículo", "tipo": "text" },
+        { "tag": "fecha_hechos", "label": "Fecha de la intervención", "tipo": "text" },
+        { "tag": "hora_hechos", "label": "Hora de la intervención", "tipo": "text" },
+        { "tag": "signos_ebriedad", "label": "Signos observados de posible ebriedad", "tipo": "textarea" },
+        { "tag": "accede_pruebas", "label": "¿El conductor accede a las pruebas?", "tipo": "select_si_no" },
+        { "tag": "resultado_prueba_caminata", "label": "Resultado: prueba de caminata en línea recta", "tipo": "textarea" },
+        { "tag": "resultado_prueba_dedos", "label": "Resultado: prueba dedo índice-barbilla", "tipo": "textarea" },
+        { "tag": "resultado_prueba_nariz", "label": "Resultado: prueba dedo índice-nariz", "tipo": "textarea" },
+        { "tag": "resultado_prueba_romberg", "label": "Resultado: prueba de Romberg", "tipo": "textarea" },
+        { "tag": "conclusion_pruebas", "label": "Conclusión del instructor tras las pruebas", "tipo": "textarea" },
+        { "tag": "motivo_lugar_diligencia", "label": "Motivo de realizar la diligencia en esa sede", "tipo": "text" }
+      ]
+    },
+    {
+      "id": "intervencion_narrativa_libre",
+      "nombre": "Acta de Intervención Policial (narrativa libre / hurto, hallazgo, etc.)",
+      "plantilla": "acta_narrativa_libre.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "agraviado_nombre", "label": "Agraviado - Nombre", "tipo": "text" },
+        { "tag": "agraviado_edad", "label": "Agraviado - Edad", "tipo": "text" },
+        { "tag": "agraviado_doc_tipo", "label": "Agraviado - Tipo de documento", "tipo": "text" },
+        { "tag": "agraviado_doc_numero", "label": "Agraviado - N° de documento", "tipo": "text" },
+        { "tag": "agraviado_ocupacion", "label": "Agraviado - Ocupación", "tipo": "text" },
+        { "tag": "agraviado_domicilio", "label": "Agraviado - Domicilio", "tipo": "text" },
+        { "tag": "hecho_primero", "label": "PRIMERO — narración", "tipo": "textarea" },
+        { "tag": "hecho_segundo", "label": "SEGUNDO — narración", "tipo": "textarea" },
+        { "tag": "hecho_tercero", "label": "TERCERO — narración", "tipo": "textarea" },
+        { "tag": "hecho_cuarto", "label": "CUARTO — narración (opcional)", "tipo": "textarea" },
+        { "tag": "hecho_quinto", "label": "QUINTO — narración (opcional)", "tipo": "textarea" }
+      ]
+    }
+  ]
+}
