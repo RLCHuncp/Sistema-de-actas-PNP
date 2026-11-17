@@ -571,7 +571,7 @@ async function buscarDni(btn) {
     if (!resp.ok) throw new Error(data.error || "No se pudo consultar el DNI");
 
     if (nombreEl) nombreEl.value = data.nombre_completo;
-    statusEl.textContent = "✓ " + data.nombre_completo;
+    statusEl.textContent = "✓ " + data.nombre_completo + (data.desde_cache ? " (guardado, no gastó consulta)" : "");
     statusEl.className = "aux-status ok";
   } catch (err) {
     statusEl.textContent = err.message;

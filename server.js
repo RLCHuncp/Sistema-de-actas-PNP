@@ -4,11 +4,12 @@ const fs = require("fs");
 const path = require("path");
 const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
-const { fetch } = require("./lib/http");
+const { fetch, leerJson, mensajeProveedor } = require("./lib/http");
+const { conCache } = require("./lib/cache");
 const basicAuth = require("express-basic-auth");
 const multer = require("multer");
 const { leerFicha } = require("./lib/ficha-reniec");
-const { consultarPlaca } = require("./lib/placa");
+const { consultarPlaca, normalizarPlaca } = require("./lib/placa");
 const { armarDocumentos, redactarHechos } = require("./lib/expediente");
 
 // Archivos subidos (ficha RENIEC) se procesan en memoria y no se guardan en disco
@@ -54,57 +55,67 @@ app.get("/api/ubigeo", (req, res) => {
 // Consulta DNI en RENIEC vía un proveedor tercero configurado en .env
 // RENIEC no ofrece API pública directa; se usa un intermediario (apis.net.pe/decolecta,
 // Factiliza, JSON.pe, APIDNI, etc.). Configurar RENIEC_API_URL y RENIEC_API_TOKEN en .env.
+async function consultarDniProveedor(numero) {
+  const apiUrl = process.env.RENIEC_API_URL;
+  const apiToken = process.env.RENIEC_API_TOKEN;
+
+  // Soporta dos patrones de proveedor:
+  // 1) Token como query param en la URL: URL trae {dni} y {token} (ej. apiperu.dev)
+  // 2) Token en header Authorization Bearer: URL solo trae {dni} (ej. Factiliza, APIDNI)
+  const usaTokenEnUrl = apiUrl.includes("{token}");
+  const url = apiUrl.replace("{dni}", numero).replace("{token}", apiToken);
+  const headers = { Accept: "application/json" };
+  if (!usaTokenEnUrl) headers.Authorization = `Bearer ${apiToken}`;
+
+  let resp;
+  try {
+    resp = await fetch(url, { headers });
+  } catch (e) {
+    throw Object.assign(new Error("No se pudo conectar con el proveedor RENIEC"), { status: 502 });
+  }
+  const raw = await leerJson(resp);
+  if (!resp.ok) {
+    const detalle = mensajeProveedor(raw);
+    throw Object.assign(new Error(`El proveedor RENIEC respondió ${resp.status}${detalle ? `: ${detalle}` : ""}`), {
+      status: resp.status,
+    });
+  }
+
+  // Distintos proveedores envuelven la respuesta en "data", "message" u otros;
+  // esto normaliza a un solo objeto plano antes de leer los campos.
+  const data = (raw && typeof raw.data === "object" && raw.data) ||
+               (raw && typeof raw.message === "object" && raw.message) ||
+               raw || {};
+
+  const nombres = data.nombres || data.first_name || data.name || "";
+  const apPaterno = data.apellido_paterno || data.apellidoPaterno || data.first_last_name || "";
+  const apMaterno = data.apellido_materno || data.apellidoMaterno || data.second_last_name || "";
+  const nombreCompleto = data.nombre_completo || data.full_name ||
+    [nombres, apPaterno, apMaterno].filter(Boolean).join(" ");
+
+  if (!nombreCompleto) {
+    throw Object.assign(new Error("No se encontraron datos para ese DNI"), { status: 404 });
+  }
+  return { dni: numero, nombre_completo: nombreCompleto };
+}
+
 app.get("/api/dni/:numero", async (req, res) => {
   const { numero } = req.params;
   if (!/^\d{8}$/.test(numero)) {
     return res.status(400).json({ error: "El DNI debe tener 8 dígitos" });
   }
-
-  const apiUrl = process.env.RENIEC_API_URL;
-  const apiToken = process.env.RENIEC_API_TOKEN;
-
-  if (!apiUrl || !apiToken) {
+  if (!process.env.RENIEC_API_URL || !process.env.RENIEC_API_TOKEN) {
     return res.status(501).json({
       error: "Consulta RENIEC no configurada. Define RENIEC_API_URL y RENIEC_API_TOKEN en .env " +
              "(ver .env.example para proveedores sugeridos).",
     });
   }
-
   try {
-    // Soporta dos patrones de proveedor:
-    // 1) Token como query param en la URL: URL trae {dni} y {token} (ej. apiperu.dev)
-    // 2) Token en header Authorization Bearer: URL solo trae {dni} (ej. Factiliza, APIDNI)
-    const usaTokenEnUrl = apiUrl.includes("{token}");
-    const url = apiUrl.replace("{dni}", numero).replace("{token}", apiToken);
-    const headers = { Accept: "application/json" };
-    if (!usaTokenEnUrl) headers.Authorization = `Bearer ${apiToken}`;
-
-    const resp = await fetch(url, { headers });
-    if (!resp.ok) {
-      return res.status(resp.status).json({ error: `El proveedor RENIEC respondió ${resp.status}` });
-    }
-    const raw = await resp.json();
-
-    // Distintos proveedores envuelven la respuesta en "data", "message" u otros;
-    // esto normaliza a un solo objeto plano antes de leer los campos.
-    const data = (raw && typeof raw.data === "object" && raw.data) ||
-                 (raw && typeof raw.message === "object" && raw.message) ||
-                 raw || {};
-
-    const nombres = data.nombres || data.first_name || data.name || "";
-    const apPaterno = data.apellido_paterno || data.apellidoPaterno || data.first_last_name || "";
-    const apMaterno = data.apellido_materno || data.apellidoMaterno || data.second_last_name || "";
-    const nombreCompleto = data.nombre_completo || data.full_name ||
-      [nombres, apPaterno, apMaterno].filter(Boolean).join(" ");
-
-    if (!nombreCompleto) {
-      return res.status(404).json({ error: "No se encontraron datos para ese DNI" });
-    }
-
-    res.json({ dni: numero, nombre_completo: nombreCompleto });
+    // Un DNI ya consultado se responde desde la caché y no gasta créditos
+    res.json(await conCache(`dni:${numero}`, () => consultarDniProveedor(numero)));
   } catch (err) {
-    console.error(err);
-    res.status(502).json({ error: "No se pudo conectar con el proveedor RENIEC" });
+    console.error(err.message);
+    res.status(err.status || 502).json({ error: err.message });
   }
 });
 
@@ -230,8 +241,11 @@ app.post("/api/ficha-reniec", upload.single("ficha"), async (req, res) => {
 
 // Datos del vehículo por placa (proveedor configurable en .env)
 app.get("/api/placa/:placa", async (req, res) => {
+  const placa = normalizarPlaca(req.params.placa);
+  if (!placa) return res.status(400).json({ error: "Placa no válida" });
   try {
-    res.json(await consultarPlaca(req.params.placa));
+    // Una placa ya consultada se responde desde la caché y no gasta créditos
+    res.json(await conCache(`placa:${placa}`, () => consultarPlaca(placa)));
   } catch (err) {
     console.error(err.message);
     res.status(err.status || 502).json({ error: err.message || "No se pudo consultar la placa" });

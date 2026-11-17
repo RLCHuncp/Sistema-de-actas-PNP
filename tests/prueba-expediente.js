@@ -28,8 +28,25 @@ function esperar(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// Proveedor simulado (tipo Factiliza) que cuenta cuántas veces lo llaman
+const http = require("http");
+const os = require("os");
+let llamadasProveedor = 0;
+const proveedor = http.createServer((req, res) => {
+  llamadasProveedor++;
+  res.writeHead(200, { "Content-Type": "application/json" });
+  if (req.url.includes("/dni/")) return res.end(JSON.stringify({ data: { nombre_completo: "PEDRO LUIS MAMANI TORRES" } }));
+  setTimeout(() => res.end(JSON.stringify({ status: 200, data: { placa: "AE9624", marca: "TOYOTA", modelo: "COROLLA", color: "GUINDA" } })), 80);
+});
+
 (async () => {
-  const env = { ...process.env, PORT: String(PORT), AUTH_USER: "", AUTH_PASS: "", ANTHROPIC_API_KEY: "" };
+  await new Promise((r) => proveedor.listen(4012, r));
+  const env = {
+    ...process.env, PORT: String(PORT), AUTH_USER: "", AUTH_PASS: "", ANTHROPIC_API_KEY: "",
+    PLACA_API_URL: "http://localhost:4012/placa/{placa}", PLACA_API_TOKEN: "x",
+    RENIEC_API_URL: "http://localhost:4012/dni/{dni}", RENIEC_API_TOKEN: "x",
+    CACHE_DIAS: "30", CACHE_ARCHIVO: path.join(os.tmpdir(), `cache-prueba-${Date.now()}.json`),
+  };
   const srv = spawn(process.execPath, [path.join(__dirname, "..", "server.js")], { env, stdio: "pipe" });
   let log = "";
   srv.stdout.on("data", (d) => (log += d));
@@ -118,7 +135,18 @@ function esperar(ms) {
     assert.ok(intervencion.includes("ESPECIES RECOGIDAS"));
     console.log("✔ expediente:", archivos.join(" | "));
 
-    // 5. Validaciones
+    // 5. Caché: la misma placa o DNI no vuelve a llamar al proveedor (ni con doble clic)
+    const [p1, p2] = await Promise.all([fetch(`${BASE}/api/placa/AE9624`), fetch(`${BASE}/api/placa/ae-9624`)]);
+    const v1 = await p1.json(); await p2.json();
+    const v3 = await (await fetch(`${BASE}/api/placa/AE9624`)).json();
+    assert.strictEqual(v1.vehiculo_marca, "TOYOTA");
+    assert.strictEqual(v3.desde_cache, true);
+    await fetch(`${BASE}/api/dni/40000002`); const d2 = await (await fetch(`${BASE}/api/dni/40000002`)).json();
+    assert.strictEqual(d2.desde_cache, true);
+    assert.strictEqual(llamadasProveedor, 2, `el proveedor recibió ${llamadasProveedor} llamadas (esperado 2)`);
+    console.log("✔ caché: 5 consultas repetidas → solo 2 llamadas al proveedor");
+
+    // 6. Validaciones
     r = await fetch(`${BASE}/api/expediente/generar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -134,5 +162,6 @@ function esperar(ms) {
     process.exitCode = 1;
   } finally {
     srv.kill();
+    proveedor.close();
   }
 })();

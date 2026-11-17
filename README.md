@@ -164,6 +164,15 @@ Igual que el DNI: define `PLACA_API_URL` (con `{placa}` y opcionalmente
 `{token}`) y `PLACA_API_TOKEN` con un proveedor que ofrezca consulta
 vehicular. Sin configurarlo, los datos del vehículo se llenan a mano.
 
+### Ahorro de créditos (caché de consultas)
+
+Cada DNI o placa consultado con éxito se guarda en `data/cache-consultas.json`
+(excluido de git) y, durante `CACHE_DIAS` días (30 por defecto), se responde
+desde ahí sin volver a llamar al proveedor. La pantalla lo indica con
+«(guardado, no gastó consulta)». Los botones de consulta se bloquean mientras
+esperan respuesta, y dos clics seguidos sobre la misma placa hacen una sola
+llamada. Para vaciar la caché basta con borrar ese archivo.
+
 ### Ajustar las plantillas nuevas
 
 Las 4 plantillas nuevas salen de `scripts/crear-plantillas.js`. Puedes

@@ -244,6 +244,12 @@
   async function consultarDni() {
     const dni = $("#dni-consulta").value.trim();
     if (!/^\d{8}$/.test(dni)) return estado("estado-ficha", "El DNI debe tener 8 dígitos", "error");
+    if (exp.personas.some((p) => p.persona_doc_numero === dni)) {
+      return estado("estado-ficha", `El DNI ${dni} ya está en la lista de personas.`, "error");
+    }
+    const btn = $("#btn-dni");
+    if (btn.disabled) return; // evita doble clic: cada consulta gasta créditos
+    btn.disabled = true;
     estado("estado-ficha", "Consultando RENIEC…", "cargando");
     try {
       const resp = await fetch(`/api/dni/${dni}`);
@@ -251,9 +257,12 @@
       const r = await resp.json();
       nuevaPersona($("#rol-nuevo").value, { persona_nombre: (r.nombre_completo || "").toUpperCase(), persona_doc_numero: dni }, true);
       $("#dni-consulta").value = "";
-      estado("estado-ficha", `✓ ${r.nombre_completo}. Completa los demás datos o sube su ficha.`, "ok");
+      const cache = r.desde_cache ? " (guardado, no gastó consulta)" : "";
+      estado("estado-ficha", `✓ ${r.nombre_completo}${cache}. Completa los demás datos o sube su ficha.`, "ok");
     } catch (e) {
       estado("estado-ficha", e.message, "error");
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -282,20 +291,25 @@
   async function consultarPlaca() {
     const placa = ($("#placa").value || "").trim();
     if (!placa) return estado("estado-placa", "Escribe la placa", "error");
+    const btn = $("#btn-placa");
+    if (btn.disabled) return; // evita doble clic: cada consulta gasta créditos
+    btn.disabled = true;
     estado("estado-placa", "Consultando…", "cargando");
     try {
       const resp = await fetch(`/api/placa/${encodeURIComponent(placa)}`);
       if (!resp.ok) throw new Error(await leerError(resp));
       const v = await resp.json();
       Object.entries(v).forEach(([k, val]) => {
-        if (val) { exp.vehiculo[k] = val; exp.auto[`vehiculo.${k}`] = true; }
+        if (val && k.startsWith("vehiculo_")) { exp.vehiculo[k] = val; exp.auto[`vehiculo.${k}`] = true; }
       });
       guardar();
       pintarVehiculo();
-      estado("estado-placa", "✓ Datos del vehículo cargados", "ok");
+      estado("estado-placa", v.desde_cache ? "✓ Datos del vehículo cargados (guardados, no gastó consulta)" : "✓ Datos del vehículo cargados", "ok");
       marcarActa("constatacion_vehicular", true);
     } catch (e) {
       estado("estado-placa", e.message, "error");
+    } finally {
+      btn.disabled = false;
     }
   }
 
