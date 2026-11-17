@@ -6,6 +6,13 @@ const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
 const fetch = require("node-fetch");
 const basicAuth = require("express-basic-auth");
+const multer = require("multer");
+const { leerFicha } = require("./lib/ficha-reniec");
+const { consultarPlaca } = require("./lib/placa");
+const { armarDocumentos, redactarHechos } = require("./lib/expediente");
+
+// Archivos subidos (ficha RENIEC) se procesan en memoria y no se guardan en disco
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const app = express();
 
@@ -149,48 +156,117 @@ app.post("/api/generar/:tipoId", (req, res) => {
   }
 });
 
-// Genera VARIOS documentos a la vez y los entrega en un ZIP. Cada elemento de
-// "documentos" es independiente (tipo de acta + sus propios datos + nombre de
-// archivo) — así el frontend puede pedir, por ejemplo, un "Acta de Registro
-// Personal" por cada persona interviniente cuando hay varios detenidos.
+// Arma un ZIP con varios documentos. Cada elemento de "documentos" es
+// independiente (tipo de acta + sus propios datos + nombre de archivo).
+function generarZip(documentos) {
+  const config = loadConfig();
+  const zip = new PizZip();
+  const nombresUsados = new Set();
+
+  for (const doc of documentos) {
+    const tipo = config.tipos_acta.find((t) => t.id === doc.tipoId);
+    if (!tipo || !tipo.implementado) {
+      throw Object.assign(new Error(`Tipo de acta inválido: ${doc.tipoId}`), { status: 400 });
+    }
+    const buffer = renderActa(tipo, doc.datos || {});
+
+    // evita sobrescribir si dos documentos terminan con el mismo nombre
+    const base = (doc.nombre || tipo.id).replace(/[\\/:*?"<>|]/g, "-");
+    let nombreArchivo = base + ".docx";
+    let intento = 2;
+    while (nombresUsados.has(nombreArchivo)) {
+      nombreArchivo = `${base}-${intento}.docx`;
+      intento++;
+    }
+    nombresUsados.add(nombreArchivo);
+    zip.file(nombreArchivo, buffer);
+  }
+  return zip.generate({ type: "nodebuffer" });
+}
+
+function enviarZip(res, buffer, nombre) {
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
+  res.send(buffer);
+}
+
+// Genera VARIOS documentos a la vez y los entrega en un ZIP — así el frontend
+// puede pedir, por ejemplo, un "Acta de Registro Personal" por cada persona
+// interviniente cuando hay varios detenidos.
 app.post("/api/generar-lote", (req, res) => {
   try {
     const { documentos } = req.body;
     if (!Array.isArray(documentos) || documentos.length === 0) {
       return res.status(400).json({ error: "No se recibió ningún documento para generar" });
     }
-
-    const config = loadConfig();
-    const zip = new PizZip();
-    const nombresUsados = new Set();
-
-    for (const doc of documentos) {
-      const tipo = config.tipos_acta.find((t) => t.id === doc.tipoId);
-      if (!tipo || !tipo.implementado) {
-        return res.status(400).json({ error: `Tipo de acta inválido: ${doc.tipoId}` });
-      }
-      const buffer = renderActa(tipo, doc.datos || {});
-
-      // evita sobrescribir si dos documentos terminan con el mismo nombre
-      let nombreArchivo = (doc.nombre || tipo.id).replace(/[\\/:*?"<>|]/g, "-") + ".docx";
-      let intento = 2;
-      while (nombresUsados.has(nombreArchivo)) {
-        nombreArchivo = `${(doc.nombre || tipo.id).replace(/[\\/:*?"<>|]/g, "-")}-${intento}.docx`;
-        intento++;
-      }
-      nombresUsados.add(nombreArchivo);
-
-      zip.file(nombreArchivo, buffer);
-    }
-
-    const content = zip.generate({ type: "nodebuffer" });
-    res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", 'attachment; filename="actas.zip"');
-    res.send(content);
+    enviarZip(res, generarZip(documentos), "actas.zip");
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(err.status || 500).json({ error: err.message });
   }
+});
+
+// ===================== Expediente de flagrancia =====================
+
+// Qué funciones opcionales están configuradas en .env (para avisar en pantalla)
+app.get("/api/capacidades", (req, res) => {
+  res.json({
+    lectura_ia: Boolean(process.env.ANTHROPIC_API_KEY),
+    consulta_dni: Boolean(process.env.RENIEC_API_URL && process.env.RENIEC_API_TOKEN),
+    consulta_placa: Boolean(process.env.PLACA_API_URL && process.env.PLACA_API_TOKEN),
+  });
+});
+
+// Lee una Ficha RENIEC (PDF o foto) y devuelve los datos de la persona
+app.post("/api/ficha-reniec", upload.single("ficha"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No se recibió ningún archivo" });
+  try {
+    res.json(await leerFicha(req.file.buffer, req.file.mimetype));
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message || "No se pudo leer la ficha" });
+  }
+});
+
+// Datos del vehículo por placa (proveedor configurable en .env)
+app.get("/api/placa/:placa", async (req, res) => {
+  try {
+    res.json(await consultarPlaca(req.params.placa));
+  } catch (err) {
+    console.error(err.message);
+    res.status(err.status || 502).json({ error: err.message || "No se pudo consultar la placa" });
+  }
+});
+
+// Redacta PRIMERO..QUINTO a partir de notas y línea de tiempo
+app.post("/api/redactar", async (req, res) => {
+  try {
+    res.json(await redactarHechos(req.body || {}));
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: err.message || "No se pudo redactar" });
+  }
+});
+
+// Genera todas las actas del expediente (por cada detenido) en un ZIP
+app.post("/api/expediente/generar", (req, res) => {
+  try {
+    const { documentos, errores } = armarDocumentos(req.body || {});
+    if (errores.length) return res.status(400).json({ error: errores.join(" ") });
+    enviarZip(res, generarZip(documentos), "expediente.zip");
+  } catch (err) {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+// Errores de subida (archivo muy grande, etc.) con mensaje entendible
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    const msg = err.code === "LIMIT_FILE_SIZE" ? "El archivo supera los 10 MB" : err.message;
+    return res.status(400).json({ error: msg });
+  }
+  next(err);
 });
 
 const PORT = process.env.PORT || 3000;

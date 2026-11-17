@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/prueba-expediente.js",
+    "plantillas": "node scripts/crear-plantillas.js"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +16,14 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-basic-auth": "^1.2.1",
+    "multer": "^2.5.0",
     "node-fetch": "^2.7.0",
-    "pizzip": "^3.2.0"
+    "pdf-parse": "^1.1.1",
+    "pizzip": "^3.2.0",
+    "tesseract.js": "^5.1.1"
+  },
+  "devDependencies": {
+    "docx": "^9.15.4",
+    "form-data": "^4.0.6"
   }
 }

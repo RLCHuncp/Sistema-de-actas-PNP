@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Expediente de flagrancia — Sistema de Actas PNP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --verde: #1e6b36;
+    --verde-osc: #134824;
+    --verde-claro: #e6f2e9;
+    --verde-auto: #f3faf5;
+    --borde-auto: #b9d6c1;
+    --dorado: #c9a227;
+    --fondo: #f4f6f3;
+    --tinta: #17221a;
+    --gris: #55625a;
+    --linea: #dde3dc;
+    --ambar-bg: #fff8e1;
+    --ambar: #7a5300;
+    --ambar-borde: #d9a400;
+    --rojo: #8a1c1c;
+    --azul: #1d4e89;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Inter, Arial, sans-serif; background: var(--fondo); color: var(--tinta); font-size: 14px; }
+  button, input, select, textarea { font-family: inherit; font-size: 14px; }
+  a { color: var(--verde); }
+
+  header.top { background: var(--verde); color: #fff; border-bottom: 4px solid var(--dorado); padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  header.top .marca { display: flex; gap: 10px; align-items: center; flex: 1 1 260px; }
+  header.top .marca b { font-size: 17px; display: block; }
+  header.top .marca small { color: #d8ebdd; }
+  header.top nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  header.top nav button { background: transparent; color: #d8ebdd; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; min-height: 40px; }
+  header.top nav button.activo { background: #fff; color: var(--verde); font-weight: 700; }
+  header.top .acciones { display: flex; gap: 8px; flex: 1 1 200px; justify-content: flex-end; }
+  header.top .acciones a, header.top .acciones button { color: #fff; background: rgba(255,255,255,.12); border: 0; border-radius: 8px; padding: 8px 12px; text-decoration: none; cursor: pointer; min-height: 40px; display: inline-flex; align-items: center; }
+
+  main { max-width: 1360px; margin: 0 auto; padding: 20px 20px 120px; }
+  h1 { font-size: 24px; margin: 4px 0 18px; }
+  .paso-label { font-size: 12px; font-weight: 700; color: var(--gris); text-transform: uppercase; letter-spacing: .06em; }
+  .cols { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .col-izq { flex: 1 1 380px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .col-der { flex: 999 1 560px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 18px; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .card .ayuda { color: var(--gris); font-size: 13px; margin: 0 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .grid.g2 { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .full { grid-column: 1 / -1; }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--gris); }
+  label.f input, label.f select, label.f textarea { border: 1px solid #c9d2c8; border-radius: 8px; padding: 9px 10px; color: var(--tinta); background: #fff; min-height: 40px; width: 100%; }
+  label.f textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+  label.f.auto input, label.f.auto textarea { background: var(--verde-auto); border-color: var(--borde-auto); }
+  label.f.falta { color: var(--ambar); }
+  label.f.falta input { background: var(--ambar-bg); border: 1.5px solid var(--ambar-borde); }
+  .fila { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .fila > label.f { flex: 1 1 140px; }
+  .btn { border: 0; border-radius: 10px; padding: 0 16px; min-height: 42px; font-weight: 600; cursor: pointer; background: var(--verde); color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn:hover { background: var(--verde-osc); }
+  .btn.sec { background: #fff; color: var(--verde); border: 1px solid var(--verde); }
+  .btn.sec:hover { background: var(--verde-claro); }
+  .btn.dorado { background: var(--dorado); color: var(--tinta); font-weight: 700; }
+  .btn.peligro { background: #fff; color: var(--rojo); border: 1px solid #e3b4b4; }
+  .btn.mini { min-height: 34px; padding: 0 10px; font-size: 13px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .drop { border: 2px dashed #9dbfa6; background: #f7fbf8; border-radius: 12px; padding: 18px; text-align: center; cursor: pointer; display: block; }
+  .drop.sobre { background: var(--verde-claro); }
+  .drop b { display: block; margin: 6px 0 2px; }
+  .drop small { color: var(--gris); }
+  .oculto { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .estado { font-size: 13px; margin-top: 8px; min-height: 18px; }
+  .estado.ok { color: var(--verde); } .estado.error { color: #b3261e; } .estado.cargando { color: var(--gris); }
+  .aviso { background: var(--ambar-bg); color: var(--ambar); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+  .info { background: var(--verde-claro); color: var(--verde); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+
+  .persona-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .persona-head .nombre { font-size: 16px; font-weight: 700; }
+  .rol { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 6px; color: #fff; letter-spacing: .05em; text-transform: uppercase; }
+  .rol.detenido { background: var(--rojo); } .rol.agraviado { background: var(--azul); } .rol.testigo { background: #5b4a8a; } .rol.conductor { background: #8a5a1c; }
+  .origen { font-size: 12px; color: var(--verde); font-weight: 600; }
+
+  .tl-fila { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+  .tl-fila input.hora { width: 82px; flex: 0 0 82px; }
+  .tl-fila input, .tl-fila textarea { border: 1px solid #c9d2c8; border-radius: 8px; padding: 9px 10px; min-height: 40px; }
+  .tl-fila textarea { flex: 1; min-height: 40px; resize: vertical; }
+  .icono { background: #fff; border: 1px solid var(--linea); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; color: var(--gris); flex: 0 0 40px; }
+
+  .delitos { max-height: 260px; overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .delito { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--linea); border-radius: 10px; padding: 10px; cursor: pointer; }
+  .delito.sel { border: 1.5px solid var(--verde); background: var(--verde-auto); }
+  .delito input { width: 18px; height: 18px; accent-color: var(--verde); margin-top: 2px; }
+  .delito small { color: var(--gris); display: block; }
+
+  .acta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .acta.sel { border-color: var(--verde); background: var(--verde-auto); }
+  .acta > label { display: flex; gap: 10px; align-items: center; flex: 1 1 240px; cursor: pointer; font-weight: 600; }
+  .acta > label input { width: 18px; height: 18px; accent-color: var(--verde); }
+  .acta .horas { display: flex; gap: 6px; align-items: center; color: var(--gris); font-size: 12px; }
+  .acta .horas input { width: 72px; border: 1px solid #c9d2c8; border-radius: 8px; padding: 7px 8px; }
+  .check { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; font-size: 13px; }
+  .check.mal { color: var(--ambar); }
+  details.extra { border: 1px solid var(--linea); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+  details.extra summary { cursor: pointer; font-weight: 600; }
+
+  .barra { position: fixed; left: 0; right: 0; bottom: 0; background: var(--tinta); color: #fff; padding: 12px 20px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; z-index: 5; }
+  .barra .txt { font-size: 14px; } .barra .txt span { color: #c7d3ca; }
+  .barra .btns { display: flex; gap: 8px; }
+  .barra .btn.sec { background: transparent; color: #fff; border-color: #6b7a70; }
+  .hidden { display: none !important; }
+  @media (max-width: 640px) {
+    main { padding: 14px 12px 140px; }
+    h1 { font-size: 20px; }
+    header.top { padding: 10px 12px; gap: 8px; }
+    header.top nav { width: 100%; }
+    header.top nav button { flex: 1; padding: 6px 4px; font-size: 13px; min-height: 36px; }
+    header.top .acciones { justify-content: flex-start; }
+    header.top .acciones a, header.top .acciones button { min-height: 34px; padding: 6px 10px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="marca">
+    <svg width="30" height="34" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 L31 7 V18 C31 27 25 33 17 36 C9 33 3 27 3 18 V7 Z" fill="#279448" stroke="#c9a227" stroke-width="2.5"/><path d="M11 18 l4 4 l8 -9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><b>Expediente de flagrancia</b><small>Sistema de Actas PNP</small></div>
+  </div>
+  <nav aria-label="Pasos">
+    <button type="button" data-ir="1" class="activo">1 · Datos</button>
+    <button type="button" data-ir="2">2 · Hechos</button>
+    <button type="button" data-ir="3">3 · Revisar y generar</button>
+  </nav>
+  <div class="acciones">
+    <button type="button" id="btn-nuevo">Nuevo expediente</button>
+    <a href="/">Actas sueltas</a>
+  </div>
+</header>
+
+<main>
+  <div id="aviso-capacidades"></div>
+
+  <!-- ================= PASO 1 ================= -->
+  <section id="paso-1">
+    <div class="paso-label">Paso 1 de 3</div>
+    <h1>Carga las fichas y el sistema llena los datos</h1>
+    <div class="cols">
+      <div class="col-izq">
+        <div class="card">
+          <h2>Ficha RENIEC</h2>
+          <p class="ayuda">Sube el PDF o una foto de la ficha. Se leen nombre, DNI, edad, natural de, estado civil, grado de instrucción y domicilio.</p>
+          <label class="f" style="margin-bottom:10px">Rol de la persona
+            <select id="rol-nuevo">
+              <option value="detenido">Detenido</option>
+              <option value="agraviado">Agraviado</option>
+              <option value="testigo">Testigo</option>
+              <option value="conductor">Conductor</option>
+            </select>
+          </label>
+          <label class="drop" id="drop">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1e6b36" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <b>Arrastra aquí la ficha o toca para elegirla</b>
+            <small>PDF, JPG o PNG · hasta 10 MB</small>
+            <input type="file" id="archivo-ficha" class="oculto" accept=".pdf,image/jpeg,image/png,image/webp" />
+          </label>
+          <div class="fila" style="margin-top:8px">
+            <label class="btn sec" style="flex:1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Tomar foto
+              <input type="file" id="foto-ficha" class="oculto" accept="image/*" capture="environment" />
+            </label>
+          </div>
+          <div class="fila" style="margin-top:10px">
+            <label class="f">o consulta por DNI
+              <input type="text" id="dni-consulta" inputmode="numeric" maxlength="8" placeholder="8 dígitos" />
+            </label>
+            <button type="button" class="btn" id="btn-dni">Consultar</button>
+          </div>
+          <button type="button" class="btn sec" id="btn-manual" style="width:100%;margin-top:10px">+ Agregar persona a mano</button>
+          <div class="estado" id="estado-ficha" role="status"></div>
+        </div>
+
+        <div class="card">
+          <h2>Vehículo <small style="font-weight:400;color:var(--gris)">(opcional)</small></h2>
+          <p class="ayuda">Para la constatación vehicular. Digita la placa y consulta, o llena a mano.</p>
+          <div class="fila">
+            <label class="f">Placa <input type="text" data-bind="vehiculo.vehiculo_placa" id="placa" style="text-transform:uppercase;font-weight:700;letter-spacing:1px" /></label>
+            <button type="button" class="btn sec" id="btn-placa">Consultar</button>
+          </div>
+          <div class="estado" id="estado-placa" role="status"></div>
+          <div class="grid g2" id="vehiculo-campos" style="margin-top:6px"></div>
+          <h2 style="margin-top:14px;font-size:14px">Constatación</h2>
+          <div class="grid g2" id="constatacion-opciones"></div>
+          <label class="f" style="margin-top:10px">Texto de la constatación (se arma solo, puedes editarlo)
+            <textarea data-bind="vehiculo.constatacion_detalle" id="constatacion-detalle"></textarea>
+          </label>
+        </div>
+
+        <div class="card">
+          <h2>Personal PNP interviniente</h2>
+          <p class="ayuda">Se recuerda en este equipo para la próxima intervención.</p>
+          <div class="grid">
+            <label class="f">Grado del instructor <input type="text" data-bind="general.instructor_grado" data-perfil placeholder="S3 PNP" /></label>
+            <label class="f">Apellidos y nombres <input type="text" data-bind="general.instructor_nombre" data-perfil /></label>
+            <label class="f">CIP <input type="text" data-bind="general.instructor_cip" data-perfil inputmode="numeric" /></label>
+            <label class="f">Unidad / Comisaría <input type="text" data-bind="general.instructor_unidad" data-perfil placeholder="Comisaría PNP ..." /></label>
+            <label class="f">Grado del operador <input type="text" data-bind="general.operador_grado" data-perfil /></label>
+            <label class="f">Operador: apellidos y nombres <input type="text" data-bind="general.operador_nombre" data-perfil /></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-der">
+        <div id="personas"></div>
+        <div class="card">
+          <h2>Lugar y fecha de la diligencia</h2>
+          <div class="grid">
+            <label class="f">Departamento <input type="text" data-bind="general.departamento" list="dl-dep" data-perfil /></label>
+            <label class="f">Provincia <input type="text" data-bind="general.provincia" list="dl-prov" data-perfil /></label>
+            <label class="f">Distrito <input type="text" data-bind="general.distrito" list="dl-dist" data-perfil /></label>
+            <label class="f">Fecha
+              <span class="fila" style="gap:6px"><input type="text" data-bind="general.fecha" placeholder="17NOV26" style="flex:1" /><button type="button" class="btn sec mini" id="btn-hoy">Hoy</button></span>
+            </label>
+            <label class="f">Hora de inicio
+              <span class="fila" style="gap:6px"><input type="text" data-bind="general.hora_inicio" placeholder="01:05" style="flex:1" /><button type="button" class="btn sec mini" id="btn-ahora">Ahora</button></span>
+            </label>
+            <label class="f full">Lugar donde se redactan las actas <input type="text" data-bind="general.lugar_exacto" data-perfil placeholder="las oficinas de la Comisaría PNP ..." /></label>
+          </div>
+          <datalist id="dl-dep"></datalist><datalist id="dl-prov"></datalist><datalist id="dl-dist"></datalist>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PASO 2 ================= -->
+  <section id="paso-2" class="hidden">
+    <div class="paso-label">Paso 2 de 3</div>
+    <h1>Cuenta lo que pasó en pocas líneas; el sistema redacta el acta</h1>
+    <div class="cols">
+      <div class="col-izq">
+        <div class="card">
+          <h2>Notas rápidas del hecho</h2>
+          <p class="ayuda">Escribe como hablas. No hace falta formato.</p>
+          <label class="f"><span class="oculto">Notas</span>
+            <textarea data-bind="hechos.notas" style="min-height:150px" placeholder="patrullando av. marginal, transeúntes avisan disparo, sujeto huye..."></textarea>
+          </label>
+        </div>
+        <div class="card">
+          <h2>Línea de tiempo</h2>
+          <p class="ayuda">Cada fila se vuelve un párrafo (PRIMERO, SEGUNDO…).</p>
+          <div id="linea-tiempo"></div>
+          <button type="button" class="btn sec" id="btn-tl" style="width:100%">+ Agregar hora</button>
+        </div>
+        <div class="card">
+          <h2>Especies y evidencias</h2>
+          <label class="f"><span class="oculto">Especies</span>
+            <textarea data-bind="hechos.especies" placeholder="Una (01) arma de fuego artesanal tipo pistola, denominada Muestra 01, lacrada con formatos A6 y A7..."></textarea>
+          </label>
+        </div>
+        <button type="button" class="btn" id="btn-redactar" style="min-height:50px">Redactar con estas notas</button>
+        <div class="estado" id="estado-redactar" role="status"></div>
+      </div>
+      <div class="col-der">
+        <div class="card">
+          <h2>Redacción de los hechos</h2>
+          <p class="ayuda">Revisa y corrige: es el texto que irá en el Acta de Intervención.</p>
+          <div class="grid" id="hechos-campos"></div>
+        </div>
+        <div class="card">
+          <h2>Delito y base legal</h2>
+          <p class="ayuda">Marca el o los delitos. La base legal se arma sola; confírmala antes de generar.</p>
+          <label class="f"><span class="oculto">Buscar delito</span><input type="text" id="buscar-delito" placeholder="Buscar delito…" /></label>
+          <div class="delitos" id="delitos"></div>
+          <label class="f" style="margin-top:12px">Base legal <textarea data-bind="base_legal" id="base-legal"></textarea></label>
+          <label class="f" style="margin-top:10px">Motivo de la detención (va en Detención y Lectura de derechos) <textarea data-bind="hechos.motivo_detencion" id="motivo-detencion"></textarea></label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PASO 3 ================= -->
+  <section id="paso-3" class="hidden">
+    <div class="paso-label">Paso 3 de 3</div>
+    <h1>Revisa y genera el expediente</h1>
+    <div class="cols">
+      <div class="col-izq">
+        <div class="card">
+          <h2>Actas a generar</h2>
+          <p class="ayuda">Se genera un juego por cada detenido. Las horas se escalonan solas desde la hora de inicio.</p>
+          <div id="actas"></div>
+          <button type="button" class="btn sec" id="btn-recalcular" style="width:100%">Recalcular horas desde el inicio</button>
+        </div>
+      </div>
+      <div class="col-der">
+        <div class="card">
+          <h2>Revisión antes de generar</h2>
+          <div id="revision"></div>
+        </div>
+        <div class="card" id="extras-card">
+          <h2>Datos adicionales por detenido</h2>
+          <p class="ayuda">Para el Registro personal y la Lectura de derechos.</p>
+          <div id="extras"></div>
+        </div>
+        <button type="button" class="btn dorado" id="btn-generar" style="min-height:54px;font-size:16px">Generar expediente (.zip con Word)</button>
+        <div class="estado" id="estado-generar" role="status"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="barra">
+  <div class="txt" id="barra-txt"></div>
+  <div class="btns">
+    <button type="button" class="btn sec" id="btn-atras">← Atrás</button>
+    <button type="button" class="btn dorado" id="btn-siguiente">Siguiente →</button>
+  </div>
+</div>
+
+<script src="expediente.js"></script>
+</body>
+</html>

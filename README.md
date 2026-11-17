@@ -123,6 +123,53 @@ claro en vez de fallar.
 **Seguridad**: nunca compartas tokens ni contraseñas por chat o control de
 versiones. `.env` nunca debe subirse a git (ya está en `.gitignore`).
 
+## Expediente de flagrancia (desde la Ficha RENIEC)
+
+Abre **http://localhost:3000/expediente.html** (o el botón del encabezado).
+Los datos se ingresan **una sola vez** y se generan todas las actas de la
+intervención, una por cada detenido, en un `.zip`:
+
+1. **Datos** — sube la Ficha RENIEC (PDF o foto, o «Tomar foto» en el
+   celular) y elige el rol (detenido, agraviado, testigo, conductor). Se
+   llenan nombre, DNI, edad (calculada), natural de, estado civil, grado de
+   instrucción y domicilio. La **ocupación no figura en la ficha**: queda
+   marcada en ámbar para completarla. Vehículo por placa (opcional),
+   personal PNP y lugar/fecha (se recuerdan en el equipo).
+2. **Hechos** — notas rápidas + línea de tiempo → botón «Redactar» arma
+   PRIMERO…QUINTO. Marca el delito y se arma la base legal y el motivo de
+   detención.
+3. **Revisar y generar** — marca las actas (Intervención, Registro
+   personal, Detención, Lectura de derechos, Buen trato, Constatación
+   vehicular); las horas se escalonan solas desde la hora de inicio. La
+   revisión avisa lo que falta antes de descargar.
+
+El borrador se guarda en el navegador: si se cierra la pestaña, no se pierde.
+
+### Cómo se lee la ficha
+
+- **Sin configurar nada:** PDF con texto (el que se descarga de la consulta
+  en línea) se lee directo; las **fotos** pasan por OCR (tesseract.js, la
+  primera vez descarga el idioma español, ~10 MB). Un PDF escaneado (por
+  ejemplo CamScanner) no tiene texto: súbelo como foto.
+- **Con `ANTHROPIC_API_KEY` en `.env` (opcional, recomendado):** la ficha
+  (PDF escaneado o foto torcida) la lee Claude y la redacción de hechos
+  queda en estilo de acta policial, marcando `[COMPLETAR]` lo que falte.
+  Ojo: los datos de la ficha y las notas se envían a la API de Anthropic.
+- Sin la clave, «Redactar» convierte cada fila de la línea de tiempo en un
+  párrafo («SIENDO LAS 00:25 HORAS APROXIMADAMENTE, …») para corregir a mano.
+
+### Consulta de placa
+
+Igual que el DNI: define `PLACA_API_URL` (con `{placa}` y opcionalmente
+`{token}`) y `PLACA_API_TOKEN` con un proveedor que ofrezca consulta
+vehicular. Sin configurarlo, los datos del vehículo se llenan a mano.
+
+### Ajustar las plantillas nuevas
+
+Las 4 plantillas nuevas salen de `scripts/crear-plantillas.js`. Puedes
+abrirlas en Word y darles formato (logos, márgenes) sin tocar las
+`{{etiquetas}}`, o cambiar el texto en el script y correr `npm run plantillas`.
+
 ## Base legal — cómo funciona
 
 `config/base-legal.json`: por cada tipo de delito trae él o los artículos
@@ -133,23 +180,34 @@ el fiscal/juez.
 ## Estructura
 
 - `server.js` — backend Express (config, base-legal, ubigeo, dni, generar,
-  generar-lote, auth opcional).
+  generar-lote, ficha-reniec, placa, redactar, expediente, auth opcional).
+- `lib/ficha-reniec.js` — lectura de la Ficha RENIEC (PDF/foto).
+- `lib/placa.js` — consulta de vehículo por placa (proveedor en `.env`).
+- `lib/expediente.js` — arma todas las actas del expediente y redacta hechos.
 - `templates/*.docx` — plantillas Word con tags `{{campo}}`.
+- `scripts/crear-plantillas.js` — regenera las 4 plantillas del expediente
+  (`npm run plantillas`).
+- `tests/prueba-expediente.js` — prueba completa (`npm test`).
 - `config/actas.json`, `config/base-legal.json`, `config/ubigeo.json`.
-- `.env.example` — variables de entorno (RENIEC + AUTH_USER/AUTH_PASS).
-- `public/index.html` — formulario (vanilla JS).
+- `.env.example` — variables de entorno (RENIEC, placa, Claude, AUTH_USER/AUTH_PASS).
+- `public/index.html` — formulario de actas sueltas (vanilla JS).
+- `public/expediente.html` + `expediente.js` — flujo de 3 pasos del expediente.
 
-## Actas implementadas (9 de 9)
+## Actas implementadas (13)
 
-1. Acta de Registro Personal
-2. Acta de Lectura de Derechos al Imputado
-3. Acta de Denuncia Verbal (agresión familiar)
-4. Acta de Lectura, Notificación y Entrega de Medidas de Protección
-5. Acta de Intervención Policial por Accidente de Tránsito
-6. Acta de Lectura de Derechos y Deberes de la Agraviada
-7. Acta de Comunicación Telefónica al Fiscal de Turno
-8. Acta de Prueba de Equilibrio y Coordinación (Hogan-Romberg / ebriedad)
-9. Acta de Intervención Policial — narrativa libre (hurto, hallazgo, etc.)
+1. Acta de Intervención Policial en Flagrante Delito, Recojo, Incautación y Lacrado *(nueva)*
+2. Acta de Detención *(nueva)*
+3. Acta de Constancia de Buen Trato *(nueva)*
+4. Acta de Constatación Vehicular *(nueva)*
+5. Acta de Registro Personal
+6. Acta de Lectura de Derechos al Imputado
+7. Acta de Denuncia Verbal (agresión familiar)
+8. Acta de Lectura, Notificación y Entrega de Medidas de Protección
+9. Acta de Intervención Policial por Accidente de Tránsito
+10. Acta de Lectura de Derechos y Deberes de la Agraviada
+11. Acta de Comunicación Telefónica al Fiscal de Turno
+12. Acta de Prueba de Equilibrio y Coordinación (Hogan-Romberg / ebriedad)
+13. Acta de Intervención Policial — narrativa libre (hurto, hallazgo, etc.)
 
 ## Cómo agregar un tipo de acta nuevo
 
@@ -164,3 +222,4 @@ el fiscal/juez.
 - Campo vacío → línea en blanco en el documento, no rompe.
 - Formulario responsivo (usable desde celular).
 - No hay guardado de historial de actas generadas todavía.
+- `npm test` levanta el servidor y genera un expediente completo de prueba.

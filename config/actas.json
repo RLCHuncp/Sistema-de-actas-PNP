@@ -29,6 +29,64 @@
   ],
   "tipos_acta": [
     {
+      "id": "intervencion_flagrancia",
+      "nombre": "Acta de Intervención Policial en Flagrante Delito, Recojo, Incautación y Lacrado",
+      "plantilla": "acta_intervencion_flagrancia.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "operador_grado", "label": "Operador - Grado", "tipo": "text" },
+        { "tag": "operador_nombre", "label": "Operador - Nombre", "tipo": "text" },
+        { "tag": "agraviado_nombre", "label": "Agraviado - Nombre", "tipo": "text" },
+        { "tag": "agraviado_edad", "label": "Agraviado - Edad", "tipo": "text" },
+        { "tag": "agraviado_doc_tipo", "label": "Agraviado - Tipo de documento", "tipo": "text" },
+        { "tag": "agraviado_doc_numero", "label": "Agraviado - N° de documento", "tipo": "text" },
+        { "tag": "agraviado_situacion", "label": "Agraviado - Situación (ej. se encuentra hospitalizado en ...)", "tipo": "text" },
+        { "tag": "hecho_primero", "label": "PRIMERO — narración", "tipo": "textarea" },
+        { "tag": "hecho_segundo", "label": "SEGUNDO — narración", "tipo": "textarea" },
+        { "tag": "hecho_tercero", "label": "TERCERO — narración", "tipo": "textarea" },
+        { "tag": "hecho_cuarto", "label": "CUARTO — narración (opcional)", "tipo": "textarea" },
+        { "tag": "hecho_quinto", "label": "QUINTO — narración (opcional)", "tipo": "textarea" },
+        { "tag": "especies", "label": "Especies recogidas / incautadas (opcional)", "tipo": "textarea" }
+      ]
+    },
+    {
+      "id": "detencion",
+      "nombre": "Acta de Detención",
+      "plantilla": "acta_detencion.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "motivo_detencion", "label": "Causa o motivo de detención", "tipo": "textarea" }
+      ]
+    },
+    {
+      "id": "buen_trato",
+      "nombre": "Acta de Constancia de Buen Trato",
+      "plantilla": "acta_buen_trato.docx",
+      "implementado": true,
+      "campos_especificos": []
+    },
+    {
+      "id": "constatacion_vehicular",
+      "nombre": "Acta de Constatación Vehicular",
+      "plantilla": "acta_constatacion_vehicular.docx",
+      "implementado": true,
+      "campos_especificos": [
+        { "tag": "vehiculo_placa", "label": "Vehículo - Placa", "tipo": "text" },
+        { "tag": "vehiculo_clase", "label": "Vehículo - Clase", "tipo": "text" },
+        { "tag": "vehiculo_marca", "label": "Vehículo - Marca", "tipo": "text" },
+        { "tag": "vehiculo_modelo", "label": "Vehículo - Modelo", "tipo": "text" },
+        { "tag": "vehiculo_anio", "label": "Vehículo - Año", "tipo": "text" },
+        { "tag": "vehiculo_color", "label": "Vehículo - Color", "tipo": "text" },
+        { "tag": "vehiculo_motor", "label": "Vehículo - N° de motor", "tipo": "text" },
+        { "tag": "vehiculo_serie", "label": "Vehículo - N° de serie / VIN", "tipo": "text" },
+        { "tag": "vehiculo_propietario", "label": "Vehículo - Propietario", "tipo": "text" },
+        { "tag": "vehiculo_soat", "label": "Vehículo - SOAT", "tipo": "text" },
+        { "tag": "conductor_licencia", "label": "Conductor - N° de licencia", "tipo": "text" },
+        { "tag": "conductor_categoria", "label": "Conductor - Clase/categoría de licencia", "tipo": "text" },
+        { "tag": "constatacion_detalle", "label": "Constatación (estado del vehículo, documentos, accesorios)", "tipo": "textarea" }
+      ]
+    },
+    {
       "id": "registro_personal",
       "nombre": "Acta de Registro Personal",
       "plantilla": "acta_registro_personal.docx",

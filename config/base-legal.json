@@ -72,6 +72,21 @@
       "texto_base_legal": "El hecho se enmarca en el delito Contra el Patrimonio, en la modalidad de Hurto Simple, previsto y sancionado en el artículo 185° del Código Penal."
     },
     {
+      "id": "homicidio_tentativa",
+      "nombre": "Homicidio en grado de tentativa",
+      "articulos_penal": ["Artículo 106° del Código Penal", "Artículo 16° del Código Penal (tentativa)"],
+      "pena_referencial": "Homicidio simple: no menor de 6 ni mayor de 20 años. En grado de tentativa el juez disminuye prudencialmente la pena (art. 16°).",
+      "texto_base_legal": "El hecho se enmarca en el delito contra la Vida, el Cuerpo y la Salud, en la modalidad de Homicidio en grado de tentativa, previsto en el artículo 106° del Código Penal, en concordancia con el artículo 16° del mismo cuerpo legal.",
+      "nota": "Si concurren circunstancias del artículo 108° (alevosía, ferocidad, etc.) la calificación puede ser homicidio calificado en grado de tentativa. Verificar con el fiscal de turno."
+    },
+    {
+      "id": "tenencia_ilegal_armas",
+      "nombre": "Tenencia ilegal de armas de fuego o municiones (incluye armas artesanales/hechizas)",
+      "articulos_penal": ["Artículo 279° del Código Penal"],
+      "pena_referencial": "No menor de 6 ni mayor de 15 años (verificar modificatorias vigentes y el tipo específico según el arma: artículos 279°, 279-B° y siguientes).",
+      "texto_base_legal": "El hecho se enmarca en el delito contra la Seguridad Pública, en la modalidad de Fabricación, suministro o tenencia ilegal de armas, municiones o materiales peligrosos, previsto y sancionado en el artículo 279° del Código Penal."
+    },
+    {
       "id": "otro_manual",
       "nombre": "Otro / especificar manualmente",
       "articulos_penal": [],
