@@ -712,7 +712,6 @@
       ubigeo = ub;
       actualizarUbigeo();
       const avisos = [];
-      if (!cap.lectura_ia) avisos.push("La ficha se lee en este servidor (PDF con texto o foto nítida). Para PDF escaneados o fotos difíciles, configura ANTHROPIC_API_KEY en .env.");
       if (!cap.consulta_dni) avisos.push("Consulta por DNI no configurada (RENIEC_API_URL / RENIEC_API_TOKEN).");
       if (!cap.consulta_placa) avisos.push("Consulta de placa no configurada (PLACA_API_URL / PLACA_API_TOKEN): llena el vehículo a mano.");
       $("#aviso-capacidades").innerHTML = avisos.length ? `<div class="aviso" style="margin-bottom:14px">${avisos.map(esc).join("<br>")}</div>` : "";
